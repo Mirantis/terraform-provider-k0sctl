@@ -1,0 +1,5 @@
+# Labeler Label Values for .github/workflows/label/yml
+
+# All the github actions folder stuff
+github-actions:
+  - any: ['workflows/*.yml']
