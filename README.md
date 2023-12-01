@@ -3,6 +3,9 @@
 A terraform provider which integrates the k0s project tooling to natively
 convert a set of hosts to a kubernetes cluster using terraform resources.
 
+This provider is developed internally, and comes with no warranty. Use it 
+at your own risk.
+
 ## Requirements
 
 - [Terraform](https://www.terraform.io/downloads.html) >= 1.4

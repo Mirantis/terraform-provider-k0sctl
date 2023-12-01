@@ -32,11 +32,7 @@ func (r *K0sctlConfigResource) Metadata(ctx context.Context, req resource.Metada
 }
 
 func (r *K0sctlConfigResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	schema, diags := k0sctl_v1beta1_schema(ctx)
-	resp.Schema = schema
-	if diags != nil {
-		resp.Diagnostics.Append(diags...)
-	}
+	resp.Schema = k0sctl_v1beta1_schema()
 }
 
 func (r *K0sctlConfigResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
