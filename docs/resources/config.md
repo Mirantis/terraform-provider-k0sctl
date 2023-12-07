@@ -64,6 +64,7 @@ Required:
 Optional:
 
 - `hooks` (Block List) Hook configuration for the host (see [below for nested schema](#nestedblock--spec--host--hooks))
+- `install_flags` (List of String) String install flags passed to k0s (e.g. '--taints=mytaint')
 - `ssh` (Block List) SSH configuration for the host (see [below for nested schema](#nestedblock--spec--host--ssh))
 - `winrm` (Block List) WinRM configuration for the host (see [below for nested schema](#nestedblock--spec--host--winrm))
 

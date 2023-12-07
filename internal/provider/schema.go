@@ -29,7 +29,7 @@ const (
 	k0sctl_schema_kind = "cluster"
 )
 
-func k0sctl_v1beta1_schema(ctx context.Context) (schema.Schema, diag.Diagnostics) {
+func k0sctl_v1beta1_schema() schema.Schema {
 	return schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Mirantis installation using launchpad, parametrized",
@@ -170,7 +170,14 @@ func k0sctl_v1beta1_schema(ctx context.Context) (schema.Schema, diag.Diagnostics
 									MarkdownDescription: "Host machine role in the cluster",
 									Required:            true,
 								},
+
+								"install_flags": schema.ListAttribute{
+									MarkdownDescription: "String install flags passed to k0s (e.g. '--taints=mytaint')",
+									Optional:            true,
+									ElementType:         types.StringType,
+								},
 							},
+
 							Blocks: map[string]schema.Block{
 
 								"hooks": schema.ListNestedBlock{
@@ -284,7 +291,7 @@ func k0sctl_v1beta1_schema(ctx context.Context) (schema.Schema, diag.Diagnostics
 				},
 			},
 		},
-	}, nil
+	}
 }
 
 type k0sctlSchemaModel struct {
@@ -362,6 +369,13 @@ func (ksm *k0sctlSchemaModel) Cluster(ctx context.Context) (k0sctl_v1beta1.Clust
 			Hooks: k0sctl_v1beta1_cluster.Hooks{},
 		}
 
+		if len(sh.InstallFlags) > 0 {
+			var shifs = make([]string, len(sh.InstallFlags))
+			for i, shif := range sh.InstallFlags {
+				shifs[i] = shif.ValueString()
+			}
+			h.InstallFlags = k0sctl_v1beta1_cluster.Flags(shifs)
+		}
 		if len(sh.SSH) > 0 {
 			shssh := sh.SSH[0]
 
@@ -512,17 +526,14 @@ type k0sctlSchemaModelSpecK0s struct {
 }
 
 type k0sctlSchemaModelSpecHost struct {
-	Role  types.String                     `tfsdk:"role"`
-	Hooks []k0sctlSchemaModelSpecHostHooks `tfsdk:"hooks"`
-	SSH   []k0sctlSchemaModelSpecHostSSH   `tfsdk:"ssh"`
-	WinRM []k0sctlSchemaModelSpecHostWinrm `tfsdk:"winrm"`
+	Role         types.String                     `tfsdk:"role"`
+	InstallFlags []types.String                   `tfsdk:"install_flags"`
+	Hooks        []k0sctlSchemaModelSpecHostHooks `tfsdk:"hooks"`
+	SSH          []k0sctlSchemaModelSpecHostSSH   `tfsdk:"ssh"`
+	WinRM        []k0sctlSchemaModelSpecHostWinrm `tfsdk:"winrm"`
 }
 type k0sctlSchemaModelSpecHostHooks struct {
 	Apply []k0sctlSchemaModelSpecHostHookAction `tfsdk:"apply"`
-}
-type k0sctlSchemaModelSpecHostMCRconfigDefaultAddressPools struct {
-	Base types.String `json:"base" tfsdk:"base"`
-	Size types.Int64  `json:"size" tfsdk:"size"`
 }
 type k0sctlSchemaModelSpecHostHookAction struct {
 	Before types.List `tfsdk:"before"`

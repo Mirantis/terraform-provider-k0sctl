@@ -16,6 +16,7 @@ func TestAccK0sctlConfigResource(t *testing.T) {
 				Config: testAccK0sctlConfigResourceConfig_minimal(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("k0sctl_config.test", "spec.host.0.hooks.0.apply.0.before.0", "ls -la"),
+					resource.TestCheckResourceAttr("k0sctl_config.test", "spec.host.1.install_flags.0", "--taints=mytaint"),
 					resource.TestCheckResourceAttr("k0sctl_config.test", "spec.k0s.version", "0.13"),
 				),
 			},
@@ -51,6 +52,7 @@ resource "k0sctl_config" "test" {
 
         host {
             role = "worker"
+            install_flags = [ "--taints=mytaint" ]
             ssh {
                 address  = "worker1.example.org"
                 key_path = "./key.pem"
