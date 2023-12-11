@@ -99,22 +99,19 @@ func (r *K0sctlConfigResource) Create(ctx context.Context, req resource.CreateRe
 		RestoreFrom:           kcsm.RestoreFrom.ValueString(),
 	}
 
+	kcsm.KubeYaml = types.StringNull()
+	kcsm.KubeHost = types.StringNull()
+	kcsm.CaCert = types.StringNull()
+	kcsm.PrivateKey = types.StringNull()
+	kcsm.ClientCert = types.StringNull()
+	kcsm.Id = kcsm.Metadata.Name
+
 	if kcsm.SkipCreate.ValueBool() {
 		resp.Diagnostics.AddWarning("skipping create", "Skipping the k0sctl create because of configuration flag.")
+		resp.Diagnostics.Append(resp.State.Set(ctx, kcsm)...)
 	} else if r.testingMode {
 		resp.Diagnostics.AddWarning("testing mode warning", "k0sctl config resource handler is in testing mode, no installation will be run.")
-
-		kcsm.KubeYaml = types.StringNull()
-		kcsm.KubeHost = types.StringNull()
-		kcsm.CaCert = types.StringNull()
-		kcsm.PrivateKey = types.StringNull()
-		kcsm.ClientCert = types.StringNull()
-
-		kcsm.Id = kcsm.Metadata.Name
-
-		if diags := resp.State.Set(ctx, kcsm); diags != nil {
-			resp.Diagnostics.Append(diags...)
-		}
+		resp.Diagnostics.Append(resp.State.Set(ctx, kcsm)...)
 	} else if err := aa.Run(); err != nil {
 		resp.Diagnostics.Append(diag.NewErrorDiagnostic("error running k0sctl apply", err.Error()))
 	} else {
