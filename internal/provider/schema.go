@@ -245,6 +245,39 @@ func k0sctl_v1beta1_schema() schema.Schema {
 												Default:             int64default.StaticInt64(22),
 											},
 										},
+
+										Blocks: map[string]schema.Block{
+											"bastion": schema.ListNestedBlock{
+												MarkdownDescription: "SSH bastion configuration for the host",
+
+												Validators: []validator.List{
+													listvalidator.SizeAtMost(1),
+												},
+
+												NestedObject: schema.NestedBlockObject{
+													Attributes: map[string]schema.Attribute{
+														"address": schema.StringAttribute{
+															MarkdownDescription: "bastion endpoint",
+															Required:            true,
+														},
+														"key_path": schema.StringAttribute{
+															MarkdownDescription: "bastion endpoint",
+															Required:            true,
+														},
+														"user": schema.StringAttribute{
+															MarkdownDescription: "bastion endpoint",
+															Required:            true,
+														},
+														"port": schema.Int64Attribute{
+															MarkdownDescription: "bastion Port",
+															Optional:            true,
+															Computed:            true,
+															Default:             int64default.StaticInt64(22),
+														},
+													},
+												},
+											},
+										},
 									},
 								},
 								"winrm": schema.ListNestedBlock{
@@ -378,15 +411,33 @@ func (ksm *k0sctlSchemaModel) Cluster(ctx context.Context) (k0sctl_v1beta1.Clust
 		}
 		if len(sh.SSH) > 0 {
 			shssh := sh.SSH[0]
+			if len(shssh.Bastion) > 0 {
+				h.Connection = k0s_rig.Connection{
+					SSH: &k0s_rig.SSH{
+						Address: shssh.Address.ValueString(),
+						KeyPath: shssh.KeyPath.ValueStringPointer(),
+						User:    shssh.User.ValueString(),
+						Port:    int(shssh.Port.ValueInt64()),
+						Bastion: &k0s_rig.SSH{
+							Address: shssh.Bastion[0].Address.ValueString(),
+							KeyPath: shssh.Bastion[0].KeyPath.ValueStringPointer(),
+							User:    shssh.Bastion[0].User.ValueString(),
+							Port:    int(shssh.Bastion[0].Port.ValueInt64()),
+						},
+					},
+				}
+			} else {
+				h.Connection = k0s_rig.Connection{
+					SSH: &k0s_rig.SSH{
+						Address: shssh.Address.ValueString(),
+						KeyPath: shssh.KeyPath.ValueStringPointer(),
+						User:    shssh.User.ValueString(),
+						Port:    int(shssh.Port.ValueInt64()),
+					},
+				}
 
-			h.Connection = k0s_rig.Connection{
-				SSH: &k0s_rig.SSH{
-					Address: shssh.Address.ValueString(),
-					KeyPath: shssh.KeyPath.ValueStringPointer(),
-					User:    shssh.User.ValueString(),
-					Port:    int(shssh.Port.ValueInt64()),
-				},
 			}
+
 		} else if len(sh.WinRM) > 0 {
 			shwinrm := sh.WinRM[0]
 
@@ -540,11 +591,20 @@ type k0sctlSchemaModelSpecHostHookAction struct {
 	After  types.List `tfsdk:"after"`
 }
 type k0sctlSchemaModelSpecHostSSH struct {
+	Address types.String                          `tfsdk:"address"`
+	KeyPath types.String                          `tfsdk:"key_path"`
+	User    types.String                          `tfsdk:"user"`
+	Port    types.Int64                           `tfsdk:"port"`
+	Bastion []k0sctlSchemaModelSpecHostSSHBastion `tfsdk:"bastion"`
+}
+
+type k0sctlSchemaModelSpecHostSSHBastion struct {
 	Address types.String `tfsdk:"address"`
 	KeyPath types.String `tfsdk:"key_path"`
 	User    types.String `tfsdk:"user"`
 	Port    types.Int64  `tfsdk:"port"`
 }
+
 type k0sctlSchemaModelSpecHostWinrm struct {
 	Address  types.String `tfsdk:"address"`
 	User     types.String `tfsdk:"user"`
