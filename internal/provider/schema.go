@@ -176,6 +176,18 @@ func k0sctl_v1beta1_schema() schema.Schema {
 									Optional:            true,
 									ElementType:         types.StringType,
 								},
+								"hostname": schema.StringAttribute{
+									MarkdownDescription: "Hostname override for the host",
+									Optional:            true,
+								},
+								"private_address": schema.StringAttribute{
+									MarkdownDescription: "Private address override for the host",
+									Optional:            true,
+								},
+								"no_taints": schema.BoolAttribute{
+									MarkdownDescription: "Do not apply taints to the host, used in conjuction with the controller+worker role",
+									Optional:            true,
+								},
 							},
 
 							Blocks: map[string]schema.Block{
@@ -398,8 +410,11 @@ func (ksm *k0sctlSchemaModel) Cluster(ctx context.Context) (k0sctl_v1beta1.Clust
 
 	for _, sh := range ksm.Spec.Hosts {
 		h := k0sctl_v1beta1_cluster.Host{
-			Role:  sh.Role.ValueString(),
-			Hooks: k0sctl_v1beta1_cluster.Hooks{},
+			Role:             sh.Role.ValueString(),
+			Hooks:            k0sctl_v1beta1_cluster.Hooks{},
+			PrivateAddress:   sh.PrivateAddress.ValueString(),
+			HostnameOverride: sh.Hostname.ValueString(),
+			NoTaints:         sh.NoTaints.ValueBool(),
 		}
 
 		if len(sh.InstallFlags) > 0 {
@@ -577,11 +592,14 @@ type k0sctlSchemaModelSpecK0s struct {
 }
 
 type k0sctlSchemaModelSpecHost struct {
-	Role         types.String                     `tfsdk:"role"`
-	InstallFlags []types.String                   `tfsdk:"install_flags"`
-	Hooks        []k0sctlSchemaModelSpecHostHooks `tfsdk:"hooks"`
-	SSH          []k0sctlSchemaModelSpecHostSSH   `tfsdk:"ssh"`
-	WinRM        []k0sctlSchemaModelSpecHostWinrm `tfsdk:"winrm"`
+	Role           types.String                     `tfsdk:"role"`
+	InstallFlags   []types.String                   `tfsdk:"install_flags"`
+	Hooks          []k0sctlSchemaModelSpecHostHooks `tfsdk:"hooks"`
+	SSH            []k0sctlSchemaModelSpecHostSSH   `tfsdk:"ssh"`
+	WinRM          []k0sctlSchemaModelSpecHostWinrm `tfsdk:"winrm"`
+	PrivateAddress types.String                     `tfsdk:"private_address"`
+	Hostname       types.String                     `tfsdk:"hostname"`
+	NoTaints       types.Bool                       `tfsdk:"no_taints"`
 }
 type k0sctlSchemaModelSpecHostHooks struct {
 	Apply []k0sctlSchemaModelSpecHostHookAction `tfsdk:"apply"`
