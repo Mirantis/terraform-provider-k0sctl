@@ -185,7 +185,7 @@ func k0sctl_v1beta1_schema() schema.Schema {
 									Optional:            true,
 								},
 								"no_taints": schema.BoolAttribute{
-									MarkdownDescription: "Do not apply taints to the host, used in conjuction with the controller+worker role",
+									MarkdownDescription: "Do not apply taints to the host, used in conjunction with the controller+worker role",
 									Optional:            true,
 								},
 							},
