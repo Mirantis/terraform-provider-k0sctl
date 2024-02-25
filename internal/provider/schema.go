@@ -112,6 +112,7 @@ func k0sctl_v1beta1_schema() schema.Schema {
 			"private_key": schema.StringAttribute{
 				MarkdownDescription: "K8 Private key for the user",
 				Computed:            true,
+				Sensitive:           true,
 			},
 			"client_cert": schema.StringAttribute{
 				MarkdownDescription: "K8 Client certificate for the user",

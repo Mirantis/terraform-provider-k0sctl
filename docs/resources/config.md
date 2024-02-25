@@ -36,7 +36,7 @@ Mirantis installation using launchpad, parametrized
 - `k0s_yaml` (String) K0S yaml for debugging
 - `kube_host` (String) K8 Kubernetes API host endpoint
 - `kube_yaml` (String, Sensitive) K8 Kubernetes API client configuration yaml file
-- `private_key` (String) K8 Private key for the user
+- `private_key` (String, Sensitive) K8 Private key for the user
 
 <a id="nestedblock--metadata"></a>
 ### Nested Schema for `metadata`
