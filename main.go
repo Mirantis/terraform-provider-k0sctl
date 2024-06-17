@@ -9,7 +9,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/james-nesbitt/terraform-provider-k0sctl/internal/provider"
+	"github.com/mirantis/terraform-provider-k0sctl/internal/provider"
 )
 
 // ensure the documentation is formatted properly.
