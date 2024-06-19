@@ -94,12 +94,13 @@ Optional:
 Required:
 
 - `address` (String) SSH endpoint
-- `key_path` (String) SSH endpoint
 - `user` (String) SSH endpoint
 
 Optional:
 
 - `bastion` (Block List) SSH bastion configuration for the host (see [below for nested schema](#nestedblock--spec--host--ssh--bastion))
+- `key_content` (String) Content of the ssh key
+- `key_path` (String) SSH endpoint
 - `port` (Number) SSH Port
 
 <a id="nestedblock--spec--host--ssh--bastion"></a>
@@ -108,11 +109,12 @@ Optional:
 Required:
 
 - `address` (String) bastion endpoint
-- `key_path` (String) bastion endpoint
 - `user` (String) bastion endpoint
 
 Optional:
 
+- `key_content` (String) Content of the ssh key for the bastion host
+- `key_path` (String) bastion endpoint
 - `port` (Number) bastion Port
 
 

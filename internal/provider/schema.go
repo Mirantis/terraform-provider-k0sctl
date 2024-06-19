@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 
+	"golang.org/x/crypto/ssh"
 	"gopkg.in/yaml.v2"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
@@ -244,7 +245,11 @@ func k0sctl_v1beta1_schema() schema.Schema {
 											},
 											"key_path": schema.StringAttribute{
 												MarkdownDescription: "SSH endpoint",
-												Required:            true,
+												Optional:            true,
+											},
+											"key_content": schema.StringAttribute{
+												MarkdownDescription: "Content of the ssh key",
+												Optional:            true,
 											},
 											"user": schema.StringAttribute{
 												MarkdownDescription: "SSH endpoint",
@@ -274,7 +279,11 @@ func k0sctl_v1beta1_schema() schema.Schema {
 														},
 														"key_path": schema.StringAttribute{
 															MarkdownDescription: "bastion endpoint",
-															Required:            true,
+															Optional:            true,
+														},
+														"key_content": schema.StringAttribute{
+															MarkdownDescription: "Content of the ssh key for the bastion host",
+															Optional:            true,
 														},
 														"user": schema.StringAttribute{
 															MarkdownDescription: "bastion endpoint",
@@ -426,28 +435,59 @@ func (ksm *k0sctlSchemaModel) Cluster(ctx context.Context) (k0sctl_v1beta1.Clust
 		}
 		if len(sh.SSH) > 0 {
 			shssh := sh.SSH[0]
+			var authMethods []ssh.AuthMethod
+			if shssh.KeyPath.ValueStringPointer() == nil || *shssh.KeyPath.ValueStringPointer() == "" {
+				if shssh.KeyContent.ValueString() != "" {
+					var err error
+					authMethods, err = k0s_rig.ParseSSHPrivateKey([]byte(shssh.KeyContent.ValueString()), k0s_rig.DefaultPasswordCallback)
+					if err != nil {
+						d.AddError("Passed private key can not be parsed for the host", err.Error())
+						authMethods = []ssh.AuthMethod{}
+					}
+				} else {
+					d.AddError("Both key_path and key_content arguments are not provided.", "Provide either key_path or key_content for the host")
+					authMethods = []ssh.AuthMethod{}
+				}
+			}
 			if len(shssh.Bastion) > 0 {
+				var bastianAuthMethods []ssh.AuthMethod
+				if shssh.Bastion[0].KeyPath.ValueStringPointer() == nil || *shssh.Bastion[0].KeyPath.ValueStringPointer() == "" {
+					if shssh.Bastion[0].KeyContent.ValueString() != "" {
+						var err error
+						bastianAuthMethods, err = k0s_rig.ParseSSHPrivateKey([]byte(shssh.Bastion[0].KeyContent.ValueString()), k0s_rig.DefaultPasswordCallback)
+						if err != nil {
+							d.AddError("Passed private key can not be parsed for the bastian host", err.Error())
+							bastianAuthMethods = []ssh.AuthMethod{}
+						}
+					} else {
+						d.AddError("Both key_path and key_content arguments are not provided.", "Provide either key_path or key_content for the bastian host")
+						bastianAuthMethods = []ssh.AuthMethod{}
+					}
+				}
 				h.Connection = k0s_rig.Connection{
 					SSH: &k0s_rig.SSH{
-						Address: shssh.Address.ValueString(),
-						KeyPath: shssh.KeyPath.ValueStringPointer(),
-						User:    shssh.User.ValueString(),
-						Port:    int(shssh.Port.ValueInt64()),
+						Address:     shssh.Address.ValueString(),
+						KeyPath:     shssh.KeyPath.ValueStringPointer(),
+						AuthMethods: authMethods,
+						User:        shssh.User.ValueString(),
+						Port:        int(shssh.Port.ValueInt64()),
 						Bastion: &k0s_rig.SSH{
-							Address: shssh.Bastion[0].Address.ValueString(),
-							KeyPath: shssh.Bastion[0].KeyPath.ValueStringPointer(),
-							User:    shssh.Bastion[0].User.ValueString(),
-							Port:    int(shssh.Bastion[0].Port.ValueInt64()),
+							Address:     shssh.Bastion[0].Address.ValueString(),
+							KeyPath:     shssh.Bastion[0].KeyPath.ValueStringPointer(),
+							AuthMethods: bastianAuthMethods,
+							User:        shssh.Bastion[0].User.ValueString(),
+							Port:        int(shssh.Bastion[0].Port.ValueInt64()),
 						},
 					},
 				}
 			} else {
 				h.Connection = k0s_rig.Connection{
 					SSH: &k0s_rig.SSH{
-						Address: shssh.Address.ValueString(),
-						KeyPath: shssh.KeyPath.ValueStringPointer(),
-						User:    shssh.User.ValueString(),
-						Port:    int(shssh.Port.ValueInt64()),
+						Address:     shssh.Address.ValueString(),
+						KeyPath:     shssh.KeyPath.ValueStringPointer(),
+						AuthMethods: authMethods,
+						User:        shssh.User.ValueString(),
+						Port:        int(shssh.Port.ValueInt64()),
 					},
 				}
 
@@ -609,18 +649,20 @@ type k0sctlSchemaModelSpecHostHookAction struct {
 	After  types.List `tfsdk:"after"`
 }
 type k0sctlSchemaModelSpecHostSSH struct {
-	Address types.String                          `tfsdk:"address"`
-	KeyPath types.String                          `tfsdk:"key_path"`
-	User    types.String                          `tfsdk:"user"`
-	Port    types.Int64                           `tfsdk:"port"`
-	Bastion []k0sctlSchemaModelSpecHostSSHBastion `tfsdk:"bastion"`
+	Address    types.String                          `tfsdk:"address"`
+	KeyPath    types.String                          `tfsdk:"key_path"`
+	KeyContent types.String                          `tfsdk:"key_content"`
+	User       types.String                          `tfsdk:"user"`
+	Port       types.Int64                           `tfsdk:"port"`
+	Bastion    []k0sctlSchemaModelSpecHostSSHBastion `tfsdk:"bastion"`
 }
 
 type k0sctlSchemaModelSpecHostSSHBastion struct {
-	Address types.String `tfsdk:"address"`
-	KeyPath types.String `tfsdk:"key_path"`
-	User    types.String `tfsdk:"user"`
-	Port    types.Int64  `tfsdk:"port"`
+	Address    types.String `tfsdk:"address"`
+	KeyPath    types.String `tfsdk:"key_path"`
+	KeyContent types.String `tfsdk:"key_content"`
+	User       types.String `tfsdk:"user"`
+	Port       types.Int64  `tfsdk:"port"`
 }
 
 type k0sctlSchemaModelSpecHostWinrm struct {
