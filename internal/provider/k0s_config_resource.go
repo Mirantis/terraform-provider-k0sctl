@@ -11,8 +11,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
-	k0sctl_action "github.com/k0sproject/k0sctl/action"
 	k0sctl_phase "github.com/k0sproject/k0sctl/phase"
+
+	phase "github.com/mirantis/terraform-provider-k0sctl/internal/k0sctl/phase"
+
+	k0sctl_action "github.com/k0sproject/k0sctl/action"
+
 	k0sctl_v1beta1 "github.com/k0sproject/k0sctl/pkg/apis/k0sctl.k0sproject.io/v1beta1"
 )
 
@@ -165,6 +169,8 @@ func (r *K0sctlConfigResource) Update(ctx context.Context, req resource.UpdateRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	pm.AddPhase(&phase.ValidateHostsExtended{})
 
 	kc = bytes.NewBuffer([]byte{})
 
