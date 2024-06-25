@@ -12,21 +12,23 @@ import (
 )
 
 // AllLoggingToTFLog turns on passing of ruslog and log to tflog.
-func AllLoggingToTFLog() {
-	logrus.AddHook(logrusTFLogHandler{})
+func AllLoggingToTFLog(ctx context.Context) {
+	logrus.AddHook(logrusTFLogHandler{ctx: ctx})
 	logrus.SetLevel(logrus.TraceLevel) // trace all log levels, as we don't know what to catch yet.
 
-	rig.SetLogger(rigTFLogLogger{})
+	rig.SetLogger(rigTFLogLogger{ctx: ctx})
 
 }
 
 // logRusTFLogHandler a tflog handler which integrates logrus so that logrus output gets handled natively.
-type logrusTFLogHandler struct{}
+type logrusTFLogHandler struct {
+	ctx context.Context
+}
 
 // Receive a logrus event.
 func (lh logrusTFLogHandler) Fire(e *logrus.Entry) error {
 	go func(event *logrus.Entry) {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+		ctx, cancel := context.WithTimeout(lh.ctx, time.Second*30)
 		defer cancel()
 		logrusTFLogFire(ctx, event)
 	}(e)
@@ -60,28 +62,29 @@ func logrusTFLogFire(ctx context.Context, e *logrus.Entry) {
 // rigTFLogLogger Logger that converts k0sProject logging to tflog.
 // @NOTE we re-use the logrus levels for convenience - but this has nothing to do with logrus.
 type rigTFLogLogger struct {
+	ctx context.Context
 }
 
 func (l rigTFLogLogger) Tracef(msg string, values ...interface{}) {
-	rigLoggerTFLogFire(logrus.TraceLevel, msg, values...)
+	rigLoggerTFLogFire(logrus.TraceLevel, msg, l.ctx, values...)
 }
 func (l rigTFLogLogger) Debugf(msg string, values ...interface{}) {
-	rigLoggerTFLogFire(logrus.DebugLevel, msg, values...)
+	rigLoggerTFLogFire(logrus.DebugLevel, msg, l.ctx, values...)
 }
 func (l rigTFLogLogger) Infof(msg string, values ...interface{}) {
-	rigLoggerTFLogFire(logrus.InfoLevel, msg, values...)
+	rigLoggerTFLogFire(logrus.InfoLevel, msg, l.ctx, values...)
 }
 func (l rigTFLogLogger) Warnf(msg string, values ...interface{}) {
-	rigLoggerTFLogFire(logrus.WarnLevel, msg, values...)
+	rigLoggerTFLogFire(logrus.WarnLevel, msg, l.ctx, values...)
 }
 func (l rigTFLogLogger) Errorf(msg string, values ...interface{}) {
-	rigLoggerTFLogFire(logrus.ErrorLevel, msg, values...)
+	rigLoggerTFLogFire(logrus.ErrorLevel, msg, l.ctx, values...)
 }
 
 // rigLoggerTFLogFire Take a k0sProject.Rig log entry, and fire a tflog entry.
-func rigLoggerTFLogFire(level logrus.Level, entry string, values ...interface{}) {
+func rigLoggerTFLogFire(level logrus.Level, entry string, ctx context.Context, values ...interface{}) {
 	go func(msg string) {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+		ctx, cancel := context.WithTimeout(ctx, time.Second*30)
 		defer cancel()
 
 		addFields := map[string]interface{}{
