@@ -149,6 +149,10 @@ func (r *K0sctlConfigResource) Update(ctx context.Context, req resource.UpdateRe
 	var kcsm k0sctlSchemaModel
 	var kcc k0sctl_v1beta1.Cluster
 
+	//AllLoggingToTFLog(ctx)
+
+	//logrusTFLogHandler
+
 	tflog.Error(ctx, "#################### Start calling Updated ###############################", map[string]interface{}{})
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &kcsm)...)

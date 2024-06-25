@@ -12,8 +12,8 @@ import (
 )
 
 // AllLoggingToTFLog turns on passing of ruslog and log to tflog.
-func AllLoggingToTFLog() {
-	logrus.AddHook(logrusTFLogHandler{})
+func AllLoggingToTFLog(ctx context.Context) {
+	logrus.AddHook(logrusTFLogHandler{ctx: ctx})
 	logrus.SetLevel(logrus.TraceLevel) // trace all log levels, as we don't know what to catch yet.
 
 	rig.SetLogger(rigTFLogLogger{})
@@ -21,14 +21,17 @@ func AllLoggingToTFLog() {
 }
 
 // logRusTFLogHandler a tflog handler which integrates logrus so that logrus output gets handled natively.
-type logrusTFLogHandler struct{}
+type logrusTFLogHandler struct {
+	ctx context.Context
+}
 
 // Receive a logrus event.
 func (lh logrusTFLogHandler) Fire(e *logrus.Entry) error {
 	go func(event *logrus.Entry) {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
-		defer cancel()
-		logrusTFLogFire(ctx, event)
+		//lh.ctx = context.Background()
+		//ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+		//defer cancel()
+		logrusTFLogFire(lh.ctx, event)
 	}(e)
 
 	return nil

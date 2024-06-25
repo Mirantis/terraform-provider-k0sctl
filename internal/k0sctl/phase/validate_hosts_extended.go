@@ -2,7 +2,6 @@ package phase
 
 import (
 	"context"
-	"errors"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	k0sctl_phase "github.com/k0sproject/k0sctl/phase"
@@ -33,7 +32,7 @@ func (p *ValidateHostsExtended) validateHostCounts() error {
 		return nil
 		//return errors.New("##################### test 2 ########################")
 	}
-	//return nil
+	return nil
 
-	return errors.New("##################### test 3 ########################")
+	//return errors.New("##################### test 3 ########################")
 }
