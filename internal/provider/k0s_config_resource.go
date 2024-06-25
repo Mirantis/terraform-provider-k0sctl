@@ -90,6 +90,10 @@ func (r *K0sctlConfigResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
+	tflog.Error(ctx, "#################### Adding a new phase within create ###############################", map[string]interface{}{})
+
+	//pm.AddPhase(&phase.ValidateHostsExtended{})
+
 	kc = bytes.NewBuffer([]byte{})
 
 	aa := k0sctl_action.Apply{
@@ -123,6 +127,8 @@ func (r *K0sctlConfigResource) Create(ctx context.Context, req resource.CreateRe
 		resp.Diagnostics.Append(kcsm.AddKubeconfig(kc)...)
 	}
 
+	tflog.Error(ctx, "#################### After running apply ###############################", map[string]interface{}{})
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -136,11 +142,14 @@ func (r *K0sctlConfigResource) Create(ctx context.Context, req resource.CreateRe
 
 func (r *K0sctlConfigResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// k0sctl has no good way to discover existing installation, so we don't do anything
+	tflog.Error(ctx, "#################### Start calling read ###############################", map[string]interface{}{})
 }
 
 func (r *K0sctlConfigResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var kcsm k0sctlSchemaModel
 	var kcc k0sctl_v1beta1.Cluster
+
+	tflog.Error(ctx, "#################### Start calling Updated ###############################", map[string]interface{}{})
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &kcsm)...)
 
@@ -170,6 +179,7 @@ func (r *K0sctlConfigResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
+	tflog.Error(ctx, "#################### Adding a new phase within update method ###############################", map[string]interface{}{})
 	pm.AddPhase(&phase.ValidateHostsExtended{})
 
 	kc = bytes.NewBuffer([]byte{})
@@ -207,6 +217,8 @@ func (r *K0sctlConfigResource) Update(ctx context.Context, req resource.UpdateRe
 		// populate the model kubernetes conf from the action
 		resp.Diagnostics.Append(kcsm.AddKubeconfig(kc)...)
 	}
+
+	tflog.Error(ctx, "#################### After running apply Update ###############################", map[string]interface{}{})
 
 	if resp.Diagnostics.HasError() {
 		return

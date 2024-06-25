@@ -1,8 +1,13 @@
 package phase
 
 import (
+	"context"
+	"errors"
+
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	k0sctl_phase "github.com/k0sproject/k0sctl/phase"
 	"github.com/k0sproject/rig/log"
+	"github.com/sirupsen/logrus"
 )
 
 type ValidateHostsExtended struct {
@@ -16,10 +21,19 @@ func (p *ValidateHostsExtended) Title() string {
 
 // Run the phase
 func (p *ValidateHostsExtended) Run() error {
+	return p.validateHostCounts()
+}
 
+func (p *ValidateHostsExtended) validateHostCounts() error {
+
+	tflog.Error(context.Background(), "#################### ValidateHostsExtended phase started ###############################")
+	log.Errorf("#################### from rig: ValidateHostsExtended phase started ###############################")
+	logrus.Error("#################### from logrus: ValidateHostsExtended phase started ###############################")
 	if len(p.Config.Metadata.EtcdMembers) == len(p.Config.Spec.Hosts.Controllers()) {
-		log.Debugf("etcd members in the cluster and controllers listed in the k0sctl configuration are equal")
+		return nil
+		//return errors.New("##################### test 2 ########################")
 	}
+	//return nil
 
-	return nil
+	return errors.New("##################### test 3 ########################")
 }
