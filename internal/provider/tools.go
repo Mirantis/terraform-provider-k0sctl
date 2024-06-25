@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/k0sproject/rig"
@@ -16,7 +15,7 @@ func AllLoggingToTFLog(ctx context.Context) {
 	logrus.AddHook(logrusTFLogHandler{ctx: ctx})
 	logrus.SetLevel(logrus.TraceLevel) // trace all log levels, as we don't know what to catch yet.
 
-	rig.SetLogger(rigTFLogLogger{})
+	rig.SetLogger(rigTFLogLogger{ctx: ctx})
 
 }
 
@@ -63,29 +62,30 @@ func logrusTFLogFire(ctx context.Context, e *logrus.Entry) {
 // rigTFLogLogger Logger that converts k0sProject logging to tflog.
 // @NOTE we re-use the logrus levels for convenience - but this has nothing to do with logrus.
 type rigTFLogLogger struct {
+	ctx context.Context
 }
 
 func (l rigTFLogLogger) Tracef(msg string, values ...interface{}) {
-	rigLoggerTFLogFire(logrus.TraceLevel, msg, values...)
+	rigLoggerTFLogFire(logrus.TraceLevel, msg, l.ctx, values...)
 }
 func (l rigTFLogLogger) Debugf(msg string, values ...interface{}) {
-	rigLoggerTFLogFire(logrus.DebugLevel, msg, values...)
+	rigLoggerTFLogFire(logrus.DebugLevel, msg, l.ctx, values...)
 }
 func (l rigTFLogLogger) Infof(msg string, values ...interface{}) {
-	rigLoggerTFLogFire(logrus.InfoLevel, msg, values...)
+	rigLoggerTFLogFire(logrus.InfoLevel, msg, l.ctx, values...)
 }
 func (l rigTFLogLogger) Warnf(msg string, values ...interface{}) {
-	rigLoggerTFLogFire(logrus.WarnLevel, msg, values...)
+	rigLoggerTFLogFire(logrus.WarnLevel, msg, l.ctx, values...)
 }
 func (l rigTFLogLogger) Errorf(msg string, values ...interface{}) {
-	rigLoggerTFLogFire(logrus.ErrorLevel, msg, values...)
+	rigLoggerTFLogFire(logrus.ErrorLevel, msg, l.ctx, values...)
 }
 
 // rigLoggerTFLogFire Take a k0sProject.Rig log entry, and fire a tflog entry.
-func rigLoggerTFLogFire(level logrus.Level, entry string, values ...interface{}) {
+func rigLoggerTFLogFire(level logrus.Level, entry string, ctx context.Context, values ...interface{}) {
 	go func(msg string) {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
-		defer cancel()
+		//ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+		//defer cancel()
 
 		addFields := map[string]interface{}{
 			"pipe": "rigTFLogLogger",
