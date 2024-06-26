@@ -56,7 +56,7 @@ func (p *K0sctlProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	resp.ResourceData = &data
 	resp.DataSourceData = &data
 
-	AllLoggingToTFLog()
+	AllLoggingToTFLog(ctx)
 }
 
 func (p *K0sctlProvider) Resources(ctx context.Context) []func() resource.Resource {
