@@ -17,6 +17,7 @@ require (
 	github.com/k0sproject/version v0.6.0
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/crypto v0.24.0
+	golang.org/x/exp v0.0.0-20230809150735-7b3493d9a819
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -111,7 +112,6 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/zclconf/go-cty v1.14.4 // indirect
-	golang.org/x/exp v0.0.0-20230809150735-7b3493d9a819 // indirect
 	golang.org/x/mod v0.18.0 // indirect
 	golang.org/x/net v0.26.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
