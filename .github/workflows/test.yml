@@ -27,7 +27,7 @@ jobs:
       - name: Setup MCC gitub repo private access
         run: git config --global url."https://${{ secrets.GH_MCC_USERNAME }}:${{ secrets.GH_MCC_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -47,7 +47,7 @@ jobs:
       - name: Setup MCC gitub repo private access
         run: git config --global url."https://${{ secrets.GH_MCC_USERNAME }}:${{ secrets.GH_MCC_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -74,7 +74,7 @@ jobs:
           - '1.6.*'
           - '1.5.*'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
